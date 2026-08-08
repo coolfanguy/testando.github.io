@@ -1,0 +1,15 @@
+body { margin:0; font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#09121a; color:#ddd; }
+#app { display:flex; justify-content:center; align-items:flex-start; padding:20px; }
+#lobby { background:#07111a; padding:18px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.6); width:340px; }
+#lobby input { width:100%; padding:8px; margin-top:6px; margin-bottom:12px; box-sizing:border-box; border-radius:6px; border:1px solid #244; background:#0b1a23; color:#fff }
+#lobby button { padding:10px 14px; border-radius:6px; border:none; background:#1f7; color:#012; font-weight:600; cursor:pointer }
+#gameUI { display:flex; gap:12px; }
+#hud { width:260px; }
+#roomLabel { font-weight:700; margin-bottom:8px }
+#scoreboard { margin-bottom:12px; }
+#chatBox { background:#07111a; padding:8px; border-radius:8px; height:420px; display:flex; flex-direction:column }
+#chatLog { flex:1; overflow:auto; font-size:13px; padding:6px }
+#chatLog .msg { margin-bottom:6px }
+#chatForm { display:flex; gap:6px; margin-top:8px }
+#chatInput { flex:1; padding:8px; border-radius:6px; border:1px solid #244; background:#08121a; color:#fff }
+canvas { border:2px solid #123; background:#04202b; display:block }

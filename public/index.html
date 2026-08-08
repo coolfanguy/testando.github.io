@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Testando Multiplayer</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="lobby">
+      <h1>Testando — Multiplayer</h1>
+      <label>Display name<br/><input id="nameInput" maxlength="24" placeholder="Your name"/></label>
+      <label>Room name<br/><input id="roomInput" maxlength="40" placeholder="Room (e.g. arena)"/></label>
+      <label>Color<br/><input id="colorInput" type="color" value="#ff8800"/></label>
+      <button id="joinBtn">Join Room</button>
+      <div id="lobbyInfo">Open this page in multiple tabs to test.</div>
+    </div>
+
+    <div id="gameUI" style="display:none;">
+      <div id="hud">
+        <div id="roomLabel"></div>
+        <div id="scoreboard"></div>
+        <div id="chatBox">
+          <div id="chatLog"></div>
+          <form id="chatForm"><input id="chatInput" autocomplete="off" placeholder="Say something"/><button>Send</button></form>
+        </div>
+      </div>
+      <canvas id="game" width="960" height="640"></canvas>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/game.js"></script>
+</body>
+</html>
