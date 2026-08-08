@@ -1,337 +1,136 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absorb Arena | Multiplayer Prototype</title>
+    <title>Absorb Arena | Map Arena</title>
     <style>
         :root {
-            --bg: #07131e;
-            --surface: #0e2430;
-            --surface-2: #143248;
-            --accent: #69d6ff;
-            --accent-2: #7c6bff;
-            --text: #e8f7ff;
-            --muted: #9bbbd1;
-            --danger: #ff5b70;
-            --success: #4ef7a3;
+            --bg: #ffffff;
+            --surface: #f7f9fc;
+            --panel: #ffffff;
+            --panel-strong: #f3f6fb;
+            --border: rgba(15, 23, 42, 0.08);
+            --text: #14213d;
+            --muted: #64748b;
+            --accent: #0ea5e9;
+            --accent2: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif; color: var(--text); background: var(--bg); }
+        button, input, select { font: inherit; }
+        button { cursor: pointer; }
 
-        body {
-            margin: 0;
-            font-family: "Inter", system-ui, sans-serif;
-            color: var(--text);
-            background: radial-gradient(circle at top left, rgba(105, 214, 255, 0.12), transparent 25%),
-                        radial-gradient(circle at bottom right, rgba(124, 107, 255, 0.14), transparent 20%),
-                        linear-gradient(180deg, #04101b 0%, #08191f 100%);
-            min-height: 100vh;
+        #game-root { position: relative; min-height: 100vh; }
+        #hud {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            gap: 12px; padding: 16px 20px; background: rgba(255,255,255,0.95); border-bottom: 1px solid var(--border);
         }
+        .hud-left { display: grid; gap: 6px; }
+        .hud-name { font-size: 1.2rem; font-weight: 700; }
+        .hud-stats { color: var(--muted); font-size: 0.95rem; }
+        .progress-wrap { width: 280px; height: 12px; border-radius: 999px; background: rgba(14, 165, 233, 0.12); overflow: hidden; }
+        .progress-bar { width: 0; height: 100%; background: var(--accent); transition: width 0.25s ease; }
+        .hud-right { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-        header, footer {
-            padding: 24px 32px;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: clamp(2rem, 2.8vw, 3.3rem);
-            letter-spacing: -0.04em;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            margin-top: 10px;
-            max-width: 760px;
-            line-height: 1.7;
-        }
-
-        .button, button {
-            border: none;
-            border-radius: 999px;
-            padding: 12px 22px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            color: #08191f;
-        }
-
-        .button:hover, button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 18px 30px rgba(20, 50, 80, 0.16);
-        }
-
-        .button-secondary {
-            background: rgba(255,255,255,0.08);
-            color: var(--text);
-        }
-
-        .app-shell {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 20px 40px;
-        }
-
-        .panel {
-            background: rgba(10, 23, 34, 0.92);
-            border: 1px solid rgba(255,255,255,0.06);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 24px;
-            margin-top: 24px;
-            box-shadow: 0 24px 60px rgba(2, 9, 18, 0.22);
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 24px;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 24px;
-        }
-
-        .grid-2 .panel {
-            margin-top: 0;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .form-card {
-            display: grid;
-            gap: 18px;
-        }
-
-        .form-card label {
-            display: grid;
-            gap: 6px;
-            font-size: 0.95rem;
-            color: var(--muted);
-        }
-
-        .form-card input,
-        .form-card select,
-        .form-card textarea {
-            width: 100%;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.04);
-            color: var(--text);
-            padding: 12px 14px;
-            font-size: 1rem;
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.08);
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-
-        .card-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .level-badge {
-            background: linear-gradient(135deg, rgba(124,107,255,0.18), rgba(105,214,255,0.18));
-            color: var(--text);
-            padding: 10px 14px;
-            border-radius: 999px;
-            font-weight: 700;
-        }
-
-        .progress-wrap {
-            background: rgba(255,255,255,0.08);
-            border-radius: 14px;
+        #map-container {
+            position: relative; width: 100%; min-height: calc(100vh - 80px);
             overflow: hidden;
-            margin-top: 14px;
-            height: 20px;
-            width: 100%;
+            background: #edf6ff;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        .progress-bar {
-            height: 100%;
-            width: 0;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            transition: width 0.3s ease;
+        #map {
+            position: absolute;
+            width: 1600px;
+            height: 1600px;
+            top: 0;
+            left: 0;
+            transition: transform 0.2s ease;
         }
 
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 18px;
+        .player-node {
+            position: absolute; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+            padding: 10px; text-align: center; color: white; font-size: 1rem; user-select: none;
+            box-shadow: 0 18px 30px rgba(15, 23, 42, 0.15);
+            transform: translate(-50%, -50%);
+            transition: left 0.25s ease, top 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease;
+        }
+        .player-node::before {
+            content: '';
+            position: absolute; inset: 0; border-radius: 50%; background: rgba(0, 0, 0, 0.15);
+        }
+        .player-node.self { background: linear-gradient(135deg, #0ea5e9, #2563eb); border: 2px solid rgba(255,255,255,0.92); }
+        .player-node:not(.self) { background: linear-gradient(135deg, rgba(14,165,233,0.95), rgba(59,130,246,0.88)); }
+        .player-node.selected { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 22px 40px rgba(15, 23, 42, 0.2); }
+        .player-node span { position: relative; z-index: 1; }
+
+        #sidebar {
+            position: fixed; right: 18px; top: 98px; width: 320px; max-height: calc(100vh - 116px); overflow-y: auto;
+            padding: 18px; background: rgba(255,255,255,0.95); border: 1px solid var(--border); border-radius: 24px;
+            box-shadow: 0 24px 56px rgba(15, 23, 42, 0.1);
+        }
+        .sidebar-panel { margin-bottom: 18px; padding: 16px; background: var(--panel-strong); border-radius: 20px; }
+        .sidebar-panel h3 { margin: 0 0 12px; font-size: 1rem; }
+        .ability-row { display: grid; gap: 8px; margin-bottom: 14px; }
+        .ability-row strong { display: block; }
+        .ability-row div { color: var(--muted); font-size: 0.9rem; }
+        .ability-row button { width: 100%; }
+        .leaderboard-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(15, 23, 42, 0.08); }
+        .leaderboard-row:last-child { border-bottom: none; }
+        .leaderboard-row.self { color: var(--accent); }
+        .status-pill { display: inline-flex; padding: 6px 10px; border-radius: 999px; background: rgba(14,165,233,0.12); color: var(--accent); font-size: 0.87rem; }
+
+        .button { appearance: none; border: none; border-radius: 14px; padding: 11px 16px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; font-weight: 700; transition: transform 0.18s ease, opacity 0.2s ease; }
+        .button:hover { transform: translateY(-1px); }
+        .button-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+        .button-secondary:hover { transform: translateY(-1px); }
+        .small-button { width: 100%; }
+
+        .login-screen, .admin-panel { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(15, 23, 42, 0.45); z-index: 60; }
+        .login-card, .admin-card { width: min(520px, calc(100vw - 36px)); background: white; border-radius: 26px; padding: 24px; box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18); }
+        .login-card h1, .admin-card h2 { margin: 0 0 14px; }
+        .login-card p, .admin-copy { margin: 0 0 18px; color: var(--muted); line-height: 1.5; }
+        .login-card label, .admin-card label { display: grid; gap: 8px; margin-bottom: 16px; color: var(--text); }
+        .login-card input, .admin-card input, .admin-card select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 16px; }
+        .login-card .hint, .login-card .error, .login-card .notice { border-radius: 16px; padding: 12px 14px; font-size: 0.95rem; }
+        .login-card .hint { background: rgba(14,165,233,0.1); color: var(--text); }
+        .login-card .error { background: rgba(220,38,38,0.1); color: #991b1b; }
+        .login-card .notice { background: rgba(16, 163, 127, 0.12); color: #115e59; }
+        .admin-actions { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); padding: 12px 16px; border-radius: 999px; color: white; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 70; }
+        #toast.visible { opacity: 1; }
+        #toast.notice { background: rgba(14,165,233,0.92); }
+        #toast.error { background: rgba(220,38,38,0.92); }
+
+        @media (max-width: 960px) {
+            #sidebar { position: static; width: auto; max-height: none; margin: 0 18px 18px; }
+            #map-container { min-height: calc(100vh - 230px); }
         }
 
-        .stat-card {
-            background: rgba(255,255,255,0.03);
-            border-radius: 20px;
-            padding: 18px;
-            min-height: 100px;
-        }
-
-        .stat-card strong {
-            display: block;
-            font-size: 1.2rem;
-            margin-bottom: 8px;
-        }
-
-        .board-list {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            display: grid;
-            gap: 12px;
-        }
-
-        .board-item {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 16px;
-            align-items: center;
-            padding: 14px 16px;
-            border-radius: 18px;
-            background: rgba(255,255,255,0.04);
-        }
-
-        .board-item strong {
-            font-size: 1rem;
-        }
-
-        .ability-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-            border-radius: 999px;
-            background: rgba(105,214,255,0.12);
-            color: #c3f4ff;
-            font-size: 0.92rem;
-        }
-
-        .ability-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .ability-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 18px;
-            padding: 16px;
-            min-width: 220px;
-            flex: 1 1 220px;
-        }
-
-        .ability-card h4 {
-            margin: 0 0 10px;
-            font-size: 1rem;
-        }
-
-        .ability-card p {
-            margin: 0;
-            color: var(--muted);
-            line-height: 1.5;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            font-size: 0.95rem;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 14px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        th {
-            color: var(--muted);
-            font-weight: 600;
-        }
-
-        .error,
-        .notice {
-            margin-top: 20px;
-            padding: 14px 18px;
-            border-radius: 16px;
-        }
-
-        .error {
-            background: rgba(255,91,112,0.12);
-            color: #ffb0b8;
-        }
-
-        .notice {
-            background: rgba(78,247,163,0.12);
-            color: #d4fff2;
-        }
-
-        footer {
-            color: var(--muted);
-            text-align: center;
-            font-size: 0.95rem;
-        }
-
-        @media (max-width: 900px) {
-            .grid-3, .grid-2 {
-                grid-template-columns: 1fr;
-            }
-
-            header, footer {
-                padding-left: 18px;
-                padding-right: 18px;
-            }
+        @media (max-width: 640px) {
+            .player-node { width: 52px; height: 52px; font-size: 0.72rem; }
+            .hud-left { width: 100%; }
+            .hud-right { width: 100%; justify-content: stretch; }
+            .button, .button-secondary { width: 100%; }
+            .admin-actions { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="app-shell">
-        <header>
-            <div>
-                <h1>Absorb Arena</h1>
-                <p class="subtitle">Create your champion, absorb rivals, climb the leaderboard, and manage the arena with owner permissions. This prototype simulates a multiplayer world with levels, XP, abilities, and admin tools.</p>
-            </div>
-            <button id="reset-session" class="button-secondary">Refresh State</button>
-        </header>
-
-        <main id="app"></main>
-
-        <footer>Created for your GitHub website — play, customize, and share your battle arena.</footer>
-    </div>
+    <div id="map-container"><div id="map"></div></div>
+    <div id="game-root"></div>
 
     <script>
         const STORAGE_KEY = 'absorb-arena-game-state';
+        const LOCKOUT_KEY = 'absorb-arena-owner-lockout';
         const DEFAULT_OWNER_PASSWORD = 'absorbMaster';
 
         const state = {
@@ -340,18 +139,14 @@
             message: null,
             notice: null,
             abilityActive: null,
-            adminView: 'stats',
-        };
-
-        const elements = {
-            app: document.getElementById('app'),
-            resetSession: document.getElementById('reset-session'),
+            adminOpen: false,
+            lockout: { attempts: 0, blockedUntil: 0 },
         };
 
         const allAbilities = [
-            { id: 'pulse', name: 'Absorb Pulse', description: 'Boost your next absorb for +50% XP. Unlocked at level 2.', level: 2, uses: 1 },
-            { id: 'shift', name: 'Shadow Shift', description: 'Temporarily reduce absorb risk. Unlocked at level 4.', level: 4, uses: 1 },
-            { id: 'overdrive', name: 'Core Overdrive', description: 'Instantly earn bonus power and XP on next absorb. Unlocked at level 6.', level: 6, uses: 1 }
+            { id: 'pulse', name: 'Absorb Pulse', description: 'Gain +50% XP for your next absorb.', level: 2 },
+            { id: 'shift', name: 'Shadow Shift', description: 'Boost absorb chance by 15%.', level: 4 },
+            { id: 'overdrive', name: 'Core Overdrive', description: 'Earn +30 bonus XP on a successful absorb.', level: 6 },
         ];
 
         function loadState() {
@@ -361,19 +156,13 @@
                     const parsed = JSON.parse(stored);
                     state.currentPlayerId = parsed.currentPlayerId || null;
                     state.players = parsed.players || [];
-                } catch (err) {
-                    console.warn('Failed opening saved state:', err);
-                }
+                } catch (e) { console.warn('Invalid saved state', e); }
             }
-
-            if (!state.players.length) {
-                state.players = createStartingPlayers();
+            const rawLock = localStorage.getItem(LOCKOUT_KEY);
+            if (rawLock) {
+                try { state.lockout = JSON.parse(rawLock); } catch {}
             }
-
-            if (!state.currentPlayerId) {
-                state.currentPlayerId = null;
-            }
-
+            if (!state.players.length) state.players = createStartingPlayers();
             saveState();
         }
 
@@ -384,39 +173,40 @@
             }));
         }
 
-        function createStartingPlayers() {
-            return [
-                createPlayer('Nova', false, true, ''),
-                createPlayer('Raven', false, false, ''),
-                createPlayer('Quasar', false, false, ''),
-                createPlayer('Glitch', false, false, ''),
-                createPlayer('Siren', false, false, ''),
-            ].map((player, index) => {
-                player.level = 2 + Math.floor(index * 1.5);
-                player.xp = 40 + index * 15;
-                player.power = computePower(player);
-                player.admin = index === 0;
-                return player;
-            });
+        function saveLockout() {
+            localStorage.setItem(LOCKOUT_KEY, JSON.stringify(state.lockout));
         }
 
         function createPlayer(name, owner = false, admin = false, password = '') {
-            return {
+            const player = {
                 id: crypto.randomUUID(),
                 name: name || `Player${Math.floor(Math.random() * 1000)}`,
-                level: owner ? 8 : 1,
-                xp: owner ? 120 : 0,
+                level: owner ? 5 : 1,
+                xp: owner ? 60 : 0,
                 power: 10,
                 owner,
                 admin,
                 password: owner ? btoa(password || DEFAULT_OWNER_PASSWORD) : '',
                 abilities: [],
-                createdAt: Date.now(),
+                x: 8 + Math.random() * 84,
+                y: 8 + Math.random() * 84,
             };
+            player.power = computePower(player);
+            return player;
+        }
+
+        function createStartingPlayers() {
+            return ['Nova', 'Raven', 'Quasar', 'Glitch', 'Siren'].map(name => {
+                const player = createPlayer(name);
+                player.level = Math.max(1, Math.floor(Math.random() * 4) + 2);
+                player.xp = Math.floor(Math.random() * getXpNeeded(player.level) * 0.5);
+                player.power = computePower(player);
+                return player;
+            });
         }
 
         function computePower(player) {
-            return Math.round(player.level * 12 + player.xp * 0.4 + (player.admin ? 20 : 0));
+            return Math.round(player.level * 12 + player.xp * 0.45 + (player.admin ? 20 : 0));
         }
 
         function getPlayerById(id) {
@@ -428,17 +218,7 @@
         }
 
         function getLeaderboard() {
-            return [...state.players].sort((a, b) => {
-                const scoreA = a.level * 1000 + a.xp;
-                const scoreB = b.level * 1000 + b.xp;
-                return scoreB - scoreA;
-            });
-        }
-
-        function getAvailableTargets() {
-            const current = getCurrentPlayer();
-            if (!current) return [];
-            return state.players.filter(p => p.id !== current.id).sort((a,b) => b.level - a.level);
+            return [...state.players].sort((a, b) => (b.level * 1000 + b.xp) - (a.level * 1000 + a.xp));
         }
 
         function getXpNeeded(level) {
@@ -450,319 +230,368 @@
             while (player.xp >= getXpNeeded(player.level)) {
                 player.xp -= getXpNeeded(player.level);
                 player.level += 1;
-                player.power = computePower(player);
-                state.notice = `Level up! ${player.name} reached level ${player.level}.`;
+                state.notice = `${player.name} reached level ${player.level}!`;
             }
             player.power = computePower(player);
         }
 
         function render() {
-            if (!getCurrentPlayer()) {
-                renderLogin();
-                return;
-            }
-            renderGame();
+            const root = document.getElementById('game-root');
+            if (!root) return;
+
+            root.innerHTML = `
+                <div id="hud">
+                    <div class="hud-left">
+                        <div class="hud-name">${renderCurrentName()}</div>
+                        <div class="hud-stats">${renderCurrentStats()}</div>
+                        <div class="progress-wrap"><div id="xp-bar" class="progress-bar"></div></div>
+                    </div>
+                    <div class="hud-right">
+                        <button id="admin-toggle" class="button-secondary">${renderAdminLabel()}</button>
+                        <button id="login-switch" class="button-secondary">Switch Player</button>
+                    </div>
+                </div>
+                <aside id="sidebar">
+                    <div class="sidebar-panel">
+                        <h3>Abilities</h3>
+                        ${renderAbilities()}
+                    </div>
+                    <div class="sidebar-panel">
+                        <h3>Actions</h3>
+                        <button id="absorb-button" class="button small-button">Absorb rival</button>
+                        <button id="absorb-quick" class="button-secondary small-button">Quick absorb</button>
+                        <button id="spawn-bot" class="button small-button">Spawn rival</button>
+                        <button id="move-button" class="button small-button">Move</button>
+                        <button id="reset-game" class="button-secondary small-button">Reset arena</button>
+                        <div style="margin-top: 12px; color: var(--muted); font-size: 0.95rem; line-height: 1.4;">Use the Move button or arrow keys to reposition your player on the map.</div>
+                    </div>
+                    <div class="sidebar-panel">
+                        <h3>Leaderboard</h3>
+                        ${renderLeaderboard()}
+                    </div>
+                </aside>
+                <div id="toast"></div>
+                ${renderLoginOverlay()}
+                ${renderAdminOverlay()}
+            `;
+
+            bindEvents();
+            renderMap();
+            updateHud();
+            applyMessages();
         }
 
-        function renderLogin() {
-            state.message = null;
-            const form = `
-                <div class="panel">
-                    <div class="card-title">
-                        <div>
-                            <h2>Enter the Arena</h2>
-                            <p class="subtitle">Choose a name and login as owner or a regular player. Owner can manage the leaderboard and admin permissions.</p>
-                        </div>
+        function renderCurrentName() {
+            const current = getCurrentPlayer();
+            return current ? `${current.name}${current.owner ? ' (Owner)' : current.admin ? ' (Admin)' : ''}` : 'Absorb Arena';
+        }
+
+        function renderCurrentStats() {
+            const current = getCurrentPlayer();
+            return current ? `Lvl ${current.level} · XP ${current.xp}/${getXpNeeded(current.level)} · Power ${current.power}` : 'Enter the arena to begin.';
+        }
+
+        function renderAdminLabel() {
+            const current = getCurrentPlayer();
+            return current && (current.owner || current.admin) ? 'Admin' : 'Login';
+        }
+
+        function renderAbilities() {
+            const current = getCurrentPlayer();
+            if (!current) return '<p style="color: var(--muted);">Login to unlock abilities.</p>';
+            return allAbilities.map(ability => {
+                const unlocked = current.level >= ability.level;
+                const active = state.abilityActive?.id === ability.id;
+                const label = active ? 'Active' : unlocked ? 'Use' : `Unlocks at ${ability.level}`;
+                return `
+                    <div class="ability-row">
+                        <strong>${ability.name}</strong>
+                        <div>${ability.description}</div>
+                        <button class="button ${active ? 'button-secondary' : ''} small-button" data-ability="${ability.id}" ${!unlocked || active ? 'disabled' : ''}>${label}</button>
                     </div>
-                    <div class="form-card">
-                        <label>Username<input id="login-name" type="text" placeholder="Your arena name" autocomplete="off"></label>
-                        <label>Role<select id="login-role">
-                            <option value="player">Player</option>
-                            <option value="owner">Owner</option>
-                        </select></label>
-                        <label>Password<input id="login-password" type="password" placeholder="Owner password if you are owner"></label>
+                `;
+            }).join('');
+        }
+
+        function renderLeaderboard() {
+            return getLeaderboard().slice(0, 6).map(player => `
+                <div class="leaderboard-row ${player.id === state.currentPlayerId ? 'self' : ''}"><span>${player.name}</span><span>Lv ${player.level}</span></div>
+            `).join('');
+        }
+
+        function renderLoginOverlay() {
+            const current = getCurrentPlayer();
+            if (current) return '';
+            const locked = state.lockout.blockedUntil > Date.now();
+            return `
+                <div class="login-screen">
+                    <div class="login-card">
+                        <h1>Absorb Arena</h1>
+                        <p>Enter a name to join. If you want owner access, enter the password too.</p>
+                        <label>Name<input id="player-name" type="text" placeholder="Your arena name" autocomplete="off"></label>
+                        <label>Owner password<input id="owner-password" type="password" placeholder="Optional"></label>
                         <button id="login-button" class="button">Enter Arena</button>
+                        <div class="hint">First owner login creates the owner. 3 failed owner attempts lock owner entry for 5 minutes.</div>
+                        <div id="login-error" class="error hidden"></div>
+                        ${locked ? `<div class="notice">Owner login locked until ${new Date(state.lockout.blockedUntil).toLocaleTimeString()}.</div>` : ''}
                     </div>
-                    <p class="subtitle">If no owner exists yet, the first successful owner login will become the owner. Regular players can join instantly.</p>
-                    <div class="notice">If you are logging in as owner, use password <strong>${DEFAULT_OWNER_PASSWORD}</strong> for this prototype or set a new owner when prompted.</div>
                 </div>
             `;
-            elements.app.innerHTML = form;
-            document.getElementById('login-button').onclick = () => {
-                const name = document.getElementById('login-name').value.trim();
-                const role = document.getElementById('login-role').value;
-                const password = document.getElementById('login-password').value;
-                if (!name) {
-                    state.message = { type: 'error', text: 'Please pick a username before entering the arena.' };
-                    renderLogin();
+        }
+
+        function renderAdminOverlay() {
+            const current = getCurrentPlayer();
+            if (!current || !(current.owner || current.admin) || !state.adminOpen) return '';
+            return `
+                <div class="admin-panel">
+                    <div class="admin-card">
+                        <h2>Admin Panel</h2>
+                        <p class="admin-copy">Manage players, grant admins, and tune the arena.</p>
+                        <label>Target<select id="admin-target">${state.players.map(player => `<option value="${player.id}">${player.name}${player.owner ? ' (Owner)' : player.admin ? ' (Admin)' : ''}</option>`).join('')}</select></label>
+                        <div class="admin-actions">
+                            <button id="grant-admin" class="button">Grant admin</button>
+                            <button id="revoke-admin" class="button-secondary">Revoke admin</button>
+                            <button id="boost-xp" class="button">+200 XP</button>
+                            <button id="boost-level" class="button-secondary">+1 Level</button>
+                        </div>
+                        <button id="admin-close" class="button-secondary" style="margin-top: 14px; width: 100%;">Close</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindEvents() {
+            document.getElementById('login-button')?.addEventListener('click', handleLogin);
+            document.getElementById('login-switch')?.addEventListener('click', () => { state.currentPlayerId = null; saveState(); render(); });
+            document.getElementById('admin-toggle')?.addEventListener('click', () => {
+                const current = getCurrentPlayer();
+                if (current && (current.owner || current.admin)) {
+                    state.adminOpen = true;
+                    render();
+                } else {
+                    state.currentPlayerId = null;
+                    saveState();
+                    render();
+                }
+            });
+            document.getElementById('absorb-button')?.addEventListener('click', () => attemptAbsorb('normal'));
+            document.getElementById('absorb-quick')?.addEventListener('click', () => attemptAbsorb('fast'));
+            document.getElementById('spawn-bot')?.addEventListener('click', spawnBot);
+            document.getElementById('move-button')?.addEventListener('click', movePlayer);
+            document.getElementById('reset-game')?.addEventListener('click', resetGame);
+            document.querySelectorAll('[data-ability]').forEach(button => button.addEventListener('click', () => activateAbility(button.dataset.ability)));
+            document.getElementById('admin-close')?.addEventListener('click', () => { state.adminOpen = false; render(); });
+            document.getElementById('grant-admin')?.addEventListener('click', grantAdminToSelected);
+            document.getElementById('revoke-admin')?.addEventListener('click', revokeAdminFromSelected);
+            document.getElementById('boost-xp')?.addEventListener('click', () => adjustSelectedPlayer('xp'));
+            document.getElementById('boost-level')?.addEventListener('click', () => adjustSelectedPlayer('level'));
+
+            document.querySelectorAll('.player-node').forEach(node => {
+                node.addEventListener('click', () => {
+                    const targetId = node.dataset.playerId;
+                    if (targetId && targetId !== state.currentPlayerId) attemptAbsorb(targetId);
+                });
+            });
+
+            if (!window.__absorbArenaMovementBound) {
+                window.__absorbArenaMovementBound = true;
+                document.addEventListener('keydown', (event) => {
+                    const current = getCurrentPlayer();
+                    if (!current) return;
+                    if (event.key === 'ArrowUp') { event.preventDefault(); moveCurrentPlayer('up'); }
+                    if (event.key === 'ArrowDown') { event.preventDefault(); moveCurrentPlayer('down'); }
+                    if (event.key === 'ArrowLeft') { event.preventDefault(); moveCurrentPlayer('left'); }
+                    if (event.key === 'ArrowRight') { event.preventDefault(); moveCurrentPlayer('right'); }
+                });
+            }
+        }
+
+        function renderMap() {
+            const map = document.getElementById('map');
+            const container = document.getElementById('map-container');
+            if (!map || !container) return;
+
+            const existing = new Map(Array.from(map.children).map(node => [node.dataset.playerId, node]));
+            const activeIds = new Set();
+
+            state.players.forEach(player => {
+                activeIds.add(player.id);
+                let node = existing.get(player.id);
+                const selfClass = player.id === state.currentPlayerId ? 'self' : '';
+
+                if (!node) {
+                    node = document.createElement('div');
+                    node.className = `player-node ${selfClass}`;
+                    node.dataset.playerId = player.id;
+                    node.innerHTML = `<span>${player.name}</span>`;
+                    map.appendChild(node);
+                } else {
+                    node.className = `player-node ${selfClass}`;
+                    const span = node.querySelector('span');
+                    if (span) span.textContent = player.name;
+                }
+
+                node.style.left = `${player.x}%`;
+                node.style.top = `${player.y}%`;
+            });
+
+            existing.forEach((node, id) => {
+                if (!activeIds.has(id)) node.remove();
+            });
+
+            const current = getCurrentPlayer();
+            const mapWidth = 1600;
+            const mapHeight = 1600;
+            const centerX = current ? (current.x / 100) * mapWidth : mapWidth / 2;
+            const centerY = current ? (current.y / 100) * mapHeight : mapHeight / 2;
+            const offsetX = Math.min(0, Math.max(container.clientWidth - mapWidth, container.clientWidth / 2 - centerX));
+            const offsetY = Math.min(0, Math.max(container.clientHeight - mapHeight, container.clientHeight / 2 - centerY));
+            map.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        }
+
+        function updateHud() {
+            const current = getCurrentPlayer();
+            const xpBar = document.getElementById('xp-bar');
+            if (!current || !xpBar) return;
+            const ratio = Math.min(100, Math.floor((current.xp / getXpNeeded(current.level)) * 100));
+            xpBar.style.width = `${ratio}%`;
+        }
+
+        function movePlayer() {
+            const current = getCurrentPlayer();
+            if (!current) return;
+            current.x = Math.min(96, Math.max(4, current.x + (Math.random() * 14 - 7)));
+            current.y = Math.min(96, Math.max(4, current.y + (Math.random() * 14 - 7)));
+            current.power = computePower(current);
+            saveState();
+            render();
+        }
+
+        function moveCurrentPlayer(direction) {
+            const current = getCurrentPlayer();
+            if (!current) return;
+            const delta = 6;
+            if (direction === 'left') current.x = Math.max(4, current.x - delta);
+            if (direction === 'right') current.x = Math.min(96, current.x + delta);
+            if (direction === 'up') current.y = Math.max(4, current.y - delta);
+            if (direction === 'down') current.y = Math.min(96, current.y + delta);
+            current.power = computePower(current);
+            saveState();
+            render();
+        }
+
+        function applyMessages() {
+            const toast = document.getElementById('toast');
+            if (!toast) return;
+            if (state.message) {
+                toast.textContent = state.message;
+                toast.className = 'error visible';
+                state.message = null;
+                setTimeout(() => toast.className = 'toast', 3200);
+            } else if (state.notice) {
+                toast.textContent = state.notice;
+                toast.className = 'notice visible';
+                state.notice = null;
+                setTimeout(() => toast.className = 'toast', 3200);
+            }
+        }
+
+        function handleLogin() {
+            const nameInput = document.getElementById('player-name');
+            const passInput = document.getElementById('owner-password');
+            const errorEl = document.getElementById('login-error');
+            if (!nameInput || !passInput || !errorEl) return;
+            const name = nameInput.value.trim();
+            const password = passInput.value;
+            errorEl.classList.add('hidden');
+            errorEl.textContent = '';
+            if (!name) {
+                errorEl.textContent = 'Enter a name to continue.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const owner = state.players.find(p => p.owner);
+            const found = state.players.find(p => p.name.toLowerCase() === name.toLowerCase());
+            const blocked = state.lockout.blockedUntil > Date.now();
+            if (blocked) {
+                errorEl.textContent = 'Owner login locked. Try again later.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (found && found.owner) {
+                if (!password) {
+                    errorEl.textContent = 'Password required for owner login.';
+                    errorEl.classList.remove('hidden');
                     return;
                 }
-
-                let player = state.players.find(p => p.name.toLowerCase() === name.toLowerCase());
-                if (player) {
-                    if (role === 'owner') {
-                        if (player.owner && player.password === btoa(password)) {
-                            state.currentPlayerId = player.id;
-                            state.notice = `Welcome back, ${player.name}. Owner authority restored.`;
-                            saveState();
-                            render();
-                            return;
-                        }
-                        state.message = { type: 'error', text: 'Owner login failed. Check name and password.' };
-                        renderLogin();
-                        return;
-                    }
-                }
-
-                if (role === 'owner') {
-                    const existingOwner = state.players.find(p => p.owner);
-                    if (existingOwner) {
-                        state.message = { type: 'error', text: 'An owner already exists. Login as that owner or choose Player role.' };
-                        renderLogin();
-                        return;
-                    }
-                    const owner = createPlayer(name, true, true, password || DEFAULT_OWNER_PASSWORD);
-                    state.players.push(owner);
-                    state.currentPlayerId = owner.id;
-                    state.notice = `Owner ${name} created. Use the admin panel to manage the arena.`;
+                if (found.password === btoa(password)) {
+                    state.currentPlayerId = found.id;
+                    state.lockout = { attempts: 0, blockedUntil: 0 };
+                    saveLockout();
+                    state.notice = `Owner ${found.name} entered the arena.`;
                     saveState();
                     render();
                     return;
                 }
-
-                if (!player) {
-                    player = createPlayer(name);
-                    state.players.push(player);
-                    state.notice = `${name} joined the arena! Absorb rivals to gain power.`;
+                state.lockout.attempts += 1;
+                if (state.lockout.attempts >= 3) {
+                    state.lockout.blockedUntil = Date.now() + 5 * 60 * 1000;
+                    state.lockout.attempts = 0;
+                    saveLockout();
+                    errorEl.textContent = 'Too many wrong tries. Owner login locked for 5 minutes.';
+                    errorEl.classList.remove('hidden');
+                    return;
                 }
-                state.currentPlayerId = player.id;
+                saveLockout();
+                errorEl.textContent = `Wrong password. ${3 - state.lockout.attempts} tries left.`;
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (!owner && password) {
+                const newOwner = createPlayer(name, true, true, password);
+                state.players.push(newOwner);
+                state.currentPlayerId = newOwner.id;
+                state.notice = `Owner ${newOwner.name} entered the arena.`;
                 saveState();
                 render();
-            };
-
-            if (state.message) {
-                elements.app.insertAdjacentHTML('beforeend', renderMessage(state.message));
-                state.message = null;
-            }
-        }
-
-        function renderMessage(message) {
-            return `<div class="${message.type === 'error' ? 'error' : 'notice'}">${message.text}</div>`;
-        }
-
-        function renderGame() {
-            const current = getCurrentPlayer();
-            const leaderboard = getLeaderboard();
-            const targets = getAvailableTargets();
-
-            const activeAbility = state.abilityActive ? `Active ability: <strong>${state.abilityActive.name}</strong>` : 'No ability active.';
-            const abilityCards = allAbilities.map(ability => {
-                const unlocked = current.level >= ability.level;
-                const owned = current.abilities.includes(ability.id);
-                const buttonLabel = owned ? 'Activated' : unlocked ? 'Activate' : `Unlocks at level ${ability.level}`;
-                return `
-                    <div class="ability-card">
-                        <h4>${ability.name}</h4>
-                        <p>${ability.description}</p>
-                        <p style="margin: 14px 0 0; font-weight: 700;">${buttonLabel}</p>
-                        <button ${!unlocked || owned ? 'disabled' : ''} data-ability="${ability.id}" class="button button-secondary" style="margin-top: 12px; width:100%;">${buttonLabel}</button>
-                    </div>
-                `;
-            }).join('');
-
-            const targetOptions = targets.map(target => `
-                <option value="${target.id}">${target.name} — Lvl ${target.level} / Power ${target.power}</option>
-            `).join('');
-
-            const adminVisible = current.owner || current.admin;
-
-            elements.app.innerHTML = `
-                <div class="grid-3">
-                    <section class="panel">
-                        <div class="card-title">
-                            <div>
-                                <h2>${current.name}</h2>
-                                <p class="subtitle">Level ${current.level} absorber with ${current.power} power.</p>
-                            </div>
-                            <span class="level-badge">Rank ${current.level}</span>
-                        </div>
-                        <div class="stat-grid">
-                            <div class="stat-card"><strong>XP</strong>${current.xp}/${getXpNeeded(current.level)}<div class="progress-wrap"><div class="progress-bar" style="width:${Math.min(100, Math.floor(current.xp / getXpNeeded(current.level) * 100))}%"></div></div></div>
-                            <div class="stat-card"><strong>Power</strong>${current.power}</div>
-                            <div class="stat-card"><strong>Status</strong>${current.owner ? 'Owner' : current.admin ? 'Admin' : 'Player'}</div>
-                            <div class="stat-card"><strong>Players</strong>${state.players.length}</div>
-                        </div>
-                        <div style="margin-top: 22px;">
-                            <div class="status-pill">${activeAbility}</div>
-                        </div>
-                        <div style="margin-top: 22px; display:flex; gap:12px; flex-wrap: wrap;">
-                            <button id="absorb-button" class="button">Absorb a rival</button>
-                            <button id="switch-button" class="button-secondary">Switch player</button>
-                        </div>
-                    </section>
-
-                    <section class="panel">
-                        <div class="card-title">
-                            <div>
-                                <h2>Absorb Target</h2>
-                                <p class="subtitle">Choose an opponent and use your abilities to win the absorb.</p>
-                            </div>
-                        </div>
-                        <label>Target list<select id="target-select" style="margin-top:12px; width:100%; border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text);">${targetOptions}</select></label>
-                        <div style="margin-top:20px;">
-                            <button id="quick-absorb" class="button" style="width:100%;">Quick Absorb</button>
-                        </div>
-                        <div style="margin-top:18px; color: var(--muted); font-size: 0.95rem;">Pick a target and hit absorb. Higher-level opponents are harder but give more XP. Use active abilities to tilt the odds.</div>
-                    </section>
-
-                    <section class="panel">
-                        <div class="card-title"><h2>Leaderboard</h2></div>
-                        <ul class="board-list">
-                            ${leaderboard.slice(0, 5).map(player => `
-                                <li class="board-item">
-                                    <div>
-                                        <strong>${player.name}</strong>
-                                        <div style="color: var(--muted); font-size: 0.92rem;">Lvl ${player.level} · XP ${player.xp}</div>
-                                    </div>
-                                    <span>${player.power}P</span>
-                                </li>
-                            `).join('')}
-                        </ul>
-                        <p style="margin-top:18px; color: var(--muted);">Full ranking updates as you absorb and gain levels.</p>
-                    </section>
-                </div>
-
-                <section class="panel">
-                    <div class="card-title"><h2>Abilities</h2></div>
-                    <div class="ability-grid">${abilityCards}</div>
-                </section>
-
-                <section class="panel">
-                    <div class="card-title"><h2>Current Arena</h2></div>
-                    <table>
-                        <thead><tr><th>Player</th><th>Level</th><th>XP</th><th>Power</th><th>Role</th></tr></thead>
-                        <tbody>
-                            ${leaderboard.map(player => `
-                                <tr>
-                                    <td>${player.name}</td>
-                                    <td>${player.level}</td>
-                                    <td>${player.xp}</td>
-                                    <td>${player.power}</td>
-                                    <td>${player.owner ? 'Owner' : player.admin ? 'Admin' : 'Player'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </section>
-
-                ${adminVisible ? renderAdminPanel(current) : ''}
-            `;
-
-            document.getElementById('absorb-button').onclick = () => absorbAction(false);
-            document.getElementById('quick-absorb').onclick = () => absorbAction(true);
-            document.getElementById('switch-button').onclick = () => switchPlayer();
-            document.querySelectorAll('[data-ability]').forEach(button => {
-                button.onclick = () => activateAbility(button.dataset.ability);
-            });
-
-            if (state.message) {
-                elements.app.insertAdjacentHTML('beforeend', renderMessage(state.message));
-                state.message = null;
-            }
-            if (state.notice) {
-                elements.app.insertAdjacentHTML('beforeend', renderMessage({ type: 'notice', text: state.notice }));
-                state.notice = null;
+                return;
             }
 
-            if (adminVisible) {
-                document.getElementById('spawn-bot').onclick = spawnBot;
-                document.getElementById('reset-game').onclick = resetGame;
-                document.getElementById('boost-xp').onclick = () => adjustSelectedPlayer('xp');
-                document.getElementById('boost-level').onclick = () => adjustSelectedPlayer('level');
-                document.getElementById('grant-admin').onclick = () => grantAdminToSelected();
-                document.getElementById('revoke-admin').onclick = () => revokeAdminFromSelected();
+            if (!found) {
+                const player = createPlayer(name);
+                state.players.push(player);
+                state.currentPlayerId = player.id;
+                state.notice = `${player.name} joined the arena.`;
+                saveState();
+                render();
+                return;
             }
-        }
 
-        function renderAdminPanel(current) {
-            const targetOptions = state.players.map(player => `
-                <option value="${player.id}">${player.name} — ${player.owner ? 'Owner' : player.admin ? 'Admin' : 'Player'}</option>
-            `).join('');
-            return `
-                <section class="panel">
-                    <div class="card-title"><h2>Admin Panel</h2><span class="status-pill">${current.owner ? 'Owner Access' : 'Admin Access'}</span></div>
-                    <div class="grid-2">
-                        <div class="panel" style="padding:18px; background:rgba(255,255,255,0.03);">
-                            <h3>Arena Controls</h3>
-                            <button id="spawn-bot" class="button">Spawn new rival</button>
-                            <button id="reset-game" class="button button-secondary" style="margin-top: 12px;">Reset arena</button>
-                        </div>
-                        <div class="panel" style="padding:18px; background:rgba(255,255,255,0.03);">
-                            <h3>Player Permissions</h3>
-                            <label>Target<select id="admin-target" style="margin-top:12px; width:100%; border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--text);">${targetOptions}</select></label>
-                            <div style="display:flex; gap:12px; flex-wrap: wrap; margin-top:16px;">
-                                <button id="grant-admin" class="button">Grant admin</button>
-                                <button id="revoke-admin" class="button-secondary">Revoke admin</button>
-                            </div>
-                            <div style="margin-top: 16px; display:flex; gap:12px; flex-wrap: wrap;">
-                                <button id="boost-xp" class="button">+200 XP</button>
-                                <button id="boost-level" class="button-secondary">+1 Level</button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            `;
-        }
-
-        function switchPlayer() {
-            state.currentPlayerId = null;
+            state.currentPlayerId = found.id;
+            state.notice = `${found.name} returned to the arena.`;
             saveState();
             render();
         }
 
-        function activateAbility(abilityId) {
+        function attemptAbsorb(mode) {
             const current = getCurrentPlayer();
-            const ability = allAbilities.find(a => a.id === abilityId);
-            if (!ability) return;
-            if (current.level < ability.level) {
-                state.message = { type: 'error', text: `You need level ${ability.level} to use ${ability.name}.` };
+            if (!current) return;
+            const targets = state.players.filter(p => p.id !== current.id);
+            if (!targets.length) {
+                state.message = 'No rivals are available right now.';
                 render();
                 return;
             }
-            if (current.abilities.includes(abilityId)) {
-                state.message = { type: 'error', text: `${ability.name} already activated. Wait until next action.` };
-                render();
-                return;
-            }
-            current.abilities.push(abilityId);
-            state.abilityActive = ability;
-            state.notice = `${ability.name} prepared for your next absorb.`;
-            saveState();
-            render();
-        }
-
-        function absorbAction(isQuick) {
-            const current = getCurrentPlayer();
-            const targetSelect = document.getElementById('target-select');
-            const targetId = targetSelect ? targetSelect.value : null;
-            const target = getPlayerById(targetId);
-            if (!target) {
-                state.message = { type: 'error', text: 'Choose a valid target before absorbing.' };
-                render();
-                return;
-            }
-            if (target.id === current.id) {
-                state.message = { type: 'error', text: 'You cannot absorb yourself.' };
-                render();
-                return;
-            }
-            const levelGap = Math.max(0, target.level - current.level);
-            let baseChance = 0.72 - levelGap * 0.08;
-            if (baseChance < 0.14) baseChance = 0.14;
-            if (state.abilityActive?.id === 'shift') baseChance += 0.15;
-            if (state.abilityActive?.id === 'overdrive') baseChance += 0.1;
-            const success = Math.random() < baseChance;
-            let xpGained = 20 + target.level * 18 + (isQuick ? 10 : 0);
+            const target = targets[Math.floor(Math.random() * targets.length)];
+            let chance = 0.7 + (current.level - target.level) * 0.05;
+            chance = Math.min(0.92, Math.max(0.15, chance));
+            if (state.abilityActive?.id === 'shift') chance += 0.15;
+            if (state.abilityActive?.id === 'overdrive') chance += 0.1;
+            const success = Math.random() < chance;
+            let xpGained = 20 + target.level * 18 + (mode === 'fast' ? 10 : 0);
             if (state.abilityActive?.id === 'pulse') xpGained = Math.round(xpGained * 1.5);
             if (state.abilityActive?.id === 'overdrive') xpGained += 30;
             if (success) {
@@ -772,9 +601,8 @@
             } else {
                 const penalty = Math.max(5, Math.floor((target.level + 1) * 6));
                 current.xp = Math.max(0, current.xp - penalty);
-                state.message = { type: 'error', text: `${target.name} resisted the absorb. You lost ${penalty} XP.` };
+                state.message = `${target.name} resisted the absorb. Lost ${penalty} XP.`;
             }
-            current.abilities = [];
             state.abilityActive = null;
             current.power = computePower(current);
             saveState();
@@ -785,25 +613,72 @@
             target.level = Math.max(1, Math.floor(Math.random() * 5) + 1);
             target.xp = Math.floor(Math.random() * getXpNeeded(target.level) * 0.55);
             target.power = computePower(target);
+            target.x = 8 + Math.random() * 84;
+            target.y = 8 + Math.random() * 84;
         }
 
         function spawnBot() {
             const names = ['Vector', 'Pulse', 'Orbit', 'Flux', 'Nova', 'Spark', 'Hex', 'Echo', 'Cipher', 'Lumen'];
-            const name = `${names[Math.floor(Math.random() * names.length)]}${Math.floor(Math.random()*100)}`;
+            const name = `${names[Math.floor(Math.random() * names.length)]}${Math.floor(Math.random() * 100)}`;
             const player = createPlayer(name);
             player.level = Math.max(1, Math.floor(Math.random() * 6) + 1);
             player.xp = Math.floor(Math.random() * getXpNeeded(player.level) * 0.75);
             player.power = computePower(player);
             state.players.push(player);
-            state.notice = `${player.name} entered the arena as a new rival.`;
+            state.notice = `${player.name} joined the arena.`;
+            saveState();
+            render();
+        }
+
+        function activateAbility(abilityId) {
+            const current = getCurrentPlayer();
+            if (!current) return;
+            const ability = allAbilities.find(a => a.id === abilityId);
+            if (!ability) return;
+            if (current.level < ability.level) {
+                state.message = `Level ${ability.level} is required for ${ability.name}.`;
+                render();
+                return;
+            }
+            if (state.abilityActive?.id === abilityId) {
+                state.message = `${ability.name} is already active.`;
+                render();
+                return;
+            }
+            state.abilityActive = ability;
+            state.notice = `${ability.name} activated for your next absorb.`;
+            saveState();
+            render();
+        }
+
+        function grantAdminToSelected() {
+            const select = document.getElementById('admin-target');
+            const target = getPlayerById(select?.value);
+            if (!target) return;
+            target.admin = true;
+            state.notice = `${target.name} is now admin.`;
+            saveState();
+            render();
+        }
+
+        function revokeAdminFromSelected() {
+            const select = document.getElementById('admin-target');
+            const target = getPlayerById(select?.value);
+            if (!target) return;
+            if (target.owner) {
+                state.message = 'Cannot revoke owner.';
+                render();
+                return;
+            }
+            target.admin = false;
+            state.notice = `${target.name} lost admin rights.`;
             saveState();
             render();
         }
 
         function adjustSelectedPlayer(type) {
             const select = document.getElementById('admin-target');
-            if (!select) return;
-            const target = getPlayerById(select.value);
+            const target = getPlayerById(select?.value);
             if (!target) return;
             if (type === 'xp') {
                 addXp(target, 200);
@@ -811,59 +686,25 @@
             } else if (type === 'level') {
                 target.level += 1;
                 target.power = computePower(target);
-                state.notice = `${target.name} advanced to level ${target.level}.`;
+                state.notice = `${target.name} leveled up to ${target.level}.`;
             }
             saveState();
-            render();
-        }
-
-        function grantAdminToSelected() {
-            const select = document.getElementById('admin-target');
-            if (!select) return;
-            const target = getPlayerById(select.value);
-            if (!target) return;
-            target.admin = true;
-            saveState();
-            state.notice = `${target.name} is now an admin.`;
-            render();
-        }
-
-        function revokeAdminFromSelected() {
-            const select = document.getElementById('admin-target');
-            if (!select) return;
-            const target = getPlayerById(select.value);
-            if (!target) return;
-            if (target.owner) {
-                state.message = { type: 'error', text: 'You cannot revoke owner permissions.' };
-                render();
-                return;
-            }
-            target.admin = false;
-            saveState();
-            state.notice = `${target.name} is no longer an admin.`;
             render();
         }
 
         function resetGame() {
-            if (!confirm('Reset the arena and clear all players except the current one?')) return;
             const current = getCurrentPlayer();
+            if (!current) return;
+            if (!confirm('Reset the arena and keep only your player?')) return;
             state.players = [current];
             current.level = 1;
             current.xp = 0;
             current.power = computePower(current);
             current.abilities = [];
-            current.owner = current.owner;
-            current.admin = current.admin;
-            current.password = current.password;
             saveState();
-            state.notice = 'Arena reset. Start rebuilding your leaderboard.';
+            state.notice = 'Arena reset. Start rebuilding your power.';
             render();
         }
-
-        elements.resetSession.onclick = () => {
-            localStorage.removeItem(STORAGE_KEY);
-            window.location.reload();
-        };
 
         loadState();
         render();
